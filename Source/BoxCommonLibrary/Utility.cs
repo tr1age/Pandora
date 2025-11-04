@@ -131,19 +131,21 @@ namespace TheBox.Common
 		public static bool SendToUO(string message)
 		{
 			var handle = GetClientWindow();
-
 			if (handle.ToInt32() == 0)
-			{
 				return false;
-			}
 
-			var input = new INPUT[message.Length + 2];
+			if (message == null)
+				message = string.Empty;
 
-			// We have a window
+			// 2 inputs per character (down + up) + 2 for Enter (down + up) (fixed issue with Add - tr1age)
+			var input = new INPUT[message.Length * 2 + 2];
+			int k = 0;
+
+			// Build UNICODE key down + key up for every character
 			for (int i = 0; i < message.Length; i++)
 			{
-				// Send Text
-				input[i] = new INPUT
+				// key down
+				input[k++] = new INPUT
 				{
 					type = 0x0001, // Keyboard input
 					U = new InputUnion
@@ -158,16 +160,34 @@ namespace TheBox.Common
 						}
 					}
 				};
+
+				// key up
+				input[k++] = new INPUT
+				{
+					type = 0x0001,
+					U = new InputUnion
+					{
+						ki = new KEYBDINPUT
+						{
+							wVk = 0,
+							wScan = message[i],
+							dwFlags = 0x0004 | 0x0002, // KEYEVENTF_UNICODE | KEYEVENTF_KEYUP
+							time = 0,
+							dwExtraInfo = IntPtr.Zero
+						}
+					}
+				};
 			}
-			// Send Enter
-			input[message.Length] = new INPUT
+
+			// Enter (down)
+			input[k++] = new INPUT
 			{
-				type = 0x0001, // Keyboard input
+				type = 0x0001,
 				U = new InputUnion
 				{
 					ki = new KEYBDINPUT
 					{
-						wVk = 0x0D,
+						wVk = 0x0D, // VK_RETURN
 						wScan = 0,
 						dwFlags = 0,
 						time = 0,
@@ -175,14 +195,16 @@ namespace TheBox.Common
 					}
 				}
 			};
-			input[message.Length+1] = new INPUT
+
+			// Enter (up)
+			input[k++] = new INPUT
 			{
-				type = 0x0001, // Keyboard input
+				type = 0x0001,
 				U = new InputUnion
 				{
 					ki = new KEYBDINPUT
 					{
-						wVk = 0x0D,
+						wVk = 0x0D, // VK_RETURN
 						wScan = 0,
 						dwFlags = 0x0002, // KEYEVENTF_KEYUP
 						time = 0,
@@ -192,9 +214,12 @@ namespace TheBox.Common
 			};
 
 			_ = SetForegroundWindow(handle.ToInt32());
-			SendInput((uint)input.Length, input, Marshal.SizeOf(typeof(INPUT)));
-			return true;
+
+			// Send exactly the number of filled entries and report success/failure
+			uint sent = SendInput((uint)k, input, Marshal.SizeOf(typeof(INPUT)));
+			return sent == (uint)k;
 		}
+
 
 		/// <summary>
 		///     Finds the process related to the
