@@ -665,7 +665,7 @@ namespace TheBox.ArtViewer
 			{
 				if (m_Art != Art.NPCs || (m_Art == Art.NPCs && !m_Animate))
 				{
-					var hue = Hues.GetHue(m_Hue - 1);
+					var hue = Hues.GetHue(m_Hue);
 
 					if (hue != null)
 					{

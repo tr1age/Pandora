@@ -28,7 +28,9 @@ namespace Ultima
 			var path = Files.GetFilePath("hues.mul");
 			var index = 0;
 
-			List = new Hue[3000];
+			List = new Hue[3001];
+
+			List[0] = new Hue(0);
 
 			if (path != null)
 			{
@@ -60,7 +62,7 @@ namespace Ultima
 								var ptr = new IntPtr((long)gc.AddrOfPinnedObject() + currpos);
 								currpos += structsize;
 								var cur = (HueDataMul)Marshal.PtrToStructure(ptr, typeof(HueDataMul));
-								List[index] = new Hue(index, cur);
+								List[index + 1] = new Hue(index, cur);
 							}
 						}
 					}
@@ -123,7 +125,7 @@ namespace Ultima
 		{
 			index &= 0x3FFF;
 
-			if (index >= 0 && index < 3000)
+			if (index >= 0 && index <= 3000)
 			{
 				return List[index];
 			}
