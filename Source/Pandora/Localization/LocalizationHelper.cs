@@ -232,11 +232,15 @@ namespace TheBox.Localization
 				// Selected language doesn't exist. Revert to English
 				_ = MessageBox.Show(
 					String.Format(
-						"The langague selected for the current profile could not be located. {0} will be used instead.\n\nMissing language: {0}.",
-						Pandora.Profile.Language,
+						"The language selected for the current profile could not be located. {1} will be used instead.\n\nMissing language: {0}.",
+						language,
 						DEFAULT_LANGUAGE));
 
-				Pandora.Profile.Language = DEFAULT_LANGUAGE;
+				if (Pandora.Profile != null)
+				{
+					Pandora.Profile.Language = DEFAULT_LANGUAGE;
+				}
+
 				language = DEFAULT_LANGUAGE;
 
 				file = Path.Combine(Pandora.Folder, "Lang");
@@ -279,7 +283,7 @@ namespace TheBox.Localization
 				_ = MessageBox.Show(
 					"An unexpected error occurred when loading language files. Details about the error have been recorded in the log file. Pandora's Box will now close.");
 				Pandora.Log.WriteError(err, "Loading resource {0} from assembly in file {1}", resource, file);
-				throw new Exception("Language file corrupted");
+				throw new Exception("Language file corrupted", err);
 			}
 		}
 	}

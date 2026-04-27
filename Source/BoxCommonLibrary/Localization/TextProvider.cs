@@ -193,31 +193,73 @@ namespace TheBox.Common.Localization
 		/// <returns>A TextProvider object</returns>
 		public static TextProvider Deserialize(XmlDocument dom)
 		{
-			var data = dom.ChildNodes[1];
+			if (dom == null)
+			{
+				throw new ArgumentNullException("dom");
+			}
+
+			var data = dom.DocumentElement;
+
+			if (data == null || data.Name != "Data")
+			{
+				throw new FormatException("The language document must contain a Data root element.");
+			}
 
 			var text = new TextProvider
 			{
-				m_Language = data.Attributes["language"].Value
+				m_Language = GetRequiredAttribute(data, "language")
 			};
 
 			foreach (XmlNode section in data.ChildNodes)
 			{
-				var topkey = section.Attributes["name"].Value;
+				if (section.NodeType != XmlNodeType.Element || section.Name != "section")
+				{
+					continue;
+				}
+
+				var topkey = GetRequiredAttribute(section, "name");
 
 				var hash = new Dictionary<string, string>();
 
 				foreach (XmlNode entry in section.ChildNodes)
 				{
-					var lowkey = entry.Attributes["name"].Value;
-					var t = entry.Attributes["text"].Value;
+					if (entry.NodeType != XmlNodeType.Element || entry.Name != "entry")
+					{
+						continue;
+					}
+
+					var lowkey = GetRequiredAttribute(entry, "name");
+					var t = GetRequiredAttribute(entry, "text");
+
+					if (hash.ContainsKey(lowkey))
+					{
+						throw new FormatException(String.Format("Duplicate language entry: {0}.{1}", topkey, lowkey));
+					}
 
 					hash.Add(lowkey, t);
+				}
+
+				if (text.m_Sections.ContainsKey(topkey))
+				{
+					throw new FormatException(String.Format("Duplicate language section: {0}", topkey));
 				}
 
 				text.m_Sections.Add(topkey, hash);
 			}
 
 			return text;
+		}
+
+		private static string GetRequiredAttribute(XmlNode node, string name)
+		{
+			var attribute = node.Attributes[name];
+
+			if (attribute == null)
+			{
+				throw new FormatException(String.Format("Missing required attribute '{0}' on language element '{1}'.", name, node.Name));
+			}
+
+			return attribute.Value;
 		}
 		#endregion
 	}
