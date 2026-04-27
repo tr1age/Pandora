@@ -263,7 +263,7 @@ namespace TheBox.Localization
 			{
 				resource = String.Format("{0}.language.xml", language);
 
-				var asm = Assembly.LoadFile(file);
+				var asm = Assembly.UnsafeLoadFrom(file);
 				var stream = asm.GetManifestResourceStream(resource);
 
 				if (stream == null)

@@ -103,7 +103,7 @@ namespace TheBox.Options
 				return null;
 			}
 
-			var asm = Assembly.LoadFile(temp);
+			var asm = Assembly.UnsafeLoadFrom(temp);
 
 			// Get ProfileIO object
 

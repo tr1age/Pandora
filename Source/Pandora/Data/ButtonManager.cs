@@ -39,7 +39,7 @@ namespace TheBox.Data
 						throw new FileNotFoundException("A required file was not found. Please reinstall the program", file, null);
 					}
 
-					m_DefaultAssembly = Assembly.LoadFile(file);
+					m_DefaultAssembly = Assembly.UnsafeLoadFrom(file);
 				}
 
 				return m_DefaultAssembly;

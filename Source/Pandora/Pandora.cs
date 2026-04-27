@@ -349,7 +349,7 @@ namespace TheBox
 						throw new FileNotFoundException("A required file could not be found, please reinstall", filename);
 					}
 
-					m_DataAssembly = Assembly.LoadFile(filename);
+					m_DataAssembly = Assembly.UnsafeLoadFrom(filename);
 				}
 
 				return m_DataAssembly;
