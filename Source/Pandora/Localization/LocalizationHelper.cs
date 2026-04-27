@@ -237,10 +237,10 @@ namespace TheBox.Localization
 						DEFAULT_LANGUAGE));
 
 				Pandora.Profile.Language = DEFAULT_LANGUAGE;
+				language = DEFAULT_LANGUAGE;
 
 				file = Path.Combine(Pandora.Folder, "Lang");
-				file = Path.Combine(file, String.Format(DEFAULT_LANGUAGE + ".dll"));
-
+				file = Path.Combine(file, String.Format("{0}.dll", DEFAULT_LANGUAGE));
 				if (!File.Exists(file))
 				{
 					// English doesn't exist either. This is wrong.
@@ -257,20 +257,21 @@ namespace TheBox.Localization
 
 			try
 			{
-				// Read the TextProvider object
 				resource = String.Format("{0}.language.xml", language);
 
-				// Load the assembly
 				var asm = Assembly.LoadFile(file);
 				var stream = asm.GetManifestResourceStream(resource);
 
+				if (stream == null)
+				{
+					throw new Exception($"Language resource '{resource}' was not found in '{file}'.");
+				}
+
 				var dom = new XmlDocument();
 				dom.Load(stream);
-
 				stream.Close();
 
 				var tp = TextProvider.Deserialize(dom);
-
 				return tp;
 			}
 			catch (Exception err)
